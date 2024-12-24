@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import LoginForm from './components/LoginForm';
+import Dashboard from './components/Dashboard';
 
-function App() {
+const mockLogin = async (username: string, password: string) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (username === 'admin' && password === 'password') {
+        resolve('Login successful');
+      } else {
+        reject('Invalid username or password');
+      }
+    }, 1000);
+  });
+};
+
+// App Component
+const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (username: string, password: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      await mockLogin(username, password);
+      setIsLoggedIn(true);
+    } catch (err) {
+      setError(err as string);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="h-screen flex items-center justify-center bg-gray-100">
+      {!isLoggedIn ? (
+        <LoginForm onLogin={handleLogin} error={error} loading={loading} />
+      ) : (
+        <Dashboard onLogout={handleLogout} />
+      )}
     </div>
   );
-}
+};
 
 export default App;
