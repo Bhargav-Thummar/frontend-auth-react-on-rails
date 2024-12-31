@@ -1,50 +1,25 @@
-import React, { useState } from 'react';
-import LoginForm from './components/LoginForm';
+import React from 'react';
 import Dashboard from './components/Dashboard';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Login from './components/Login';
 
-const mockLogin = async (username: string, password: string) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (username === 'admin' && password === 'password') {
-        resolve('Login successful');
-      } else {
-        reject('Invalid username or password');
-      }
-    }, 1000);
-  });
+interface PrivateRouteProps {
+  children: JSX.Element;
+}
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+  const isAuthenticated = !!localStorage.getItem("authToken");
+  return isAuthenticated ? children : <Navigate to="/" />;
 };
 
-// App Component
 const App: React.FC = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async (username: string, password: string) => {
-    setLoading(true);
-    setError('');
-    try {
-      await mockLogin(username, password);
-      setIsLoggedIn(true);
-    } catch (err) {
-      setError(err as string);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-  };
-
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100">
-      {!isLoggedIn ? (
-        <LoginForm onLogin={handleLogin} error={error} loading={loading} />
-      ) : (
-        <Dashboard onLogout={handleLogout} />
-      )}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      </Routes>
+    </Router>
   );
 };
 
